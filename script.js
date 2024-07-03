@@ -1,57 +1,54 @@
 //your JS code here. If required.
-//your JS code here. If required.
-// Get references to HTML elements
-const fontSizeInput = document.getElementById("fontsize");
-const fontColorInput = document.getElementById("fontcolor");
-const form = document.querySelector("form");
+document.addEventListener("DOMContentLoaded", async function () {
+  const form = document.getElementById("customization-form");
+  const fontsizeInput = document.getElementById("fontsize");
+  const fontcolorInput = document.getElementById("fontcolor");
 
-// Function to set a cookie
-function setCookie(name, value, days) {
-  const expires = new Date();
-  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-}
-
-// Function to read a cookie by name
-function getCookie(name) {
-  const cookies = document.cookie.split("; ");
-  for (const cookie of cookies) {
-    const [cookieName, cookieValue] = cookie.split("=");
-    if (cookieName === name) {
-      return cookieValue;
-    }
-  }
-  return null;
-}
-
-// Apply user preferences from cookies when the page loads
-window.addEventListener("load", () => {
-  const fontSizeFromCookie = getCookie("fontSize");
-  const fontColorFromCookie = getCookie("fontColor");
-
-  if (fontSizeFromCookie) {
-    document.body.style.fontSize = fontSizeFromCookie;
-    fontSizeInput.value = fontSizeFromCookie;
+  // Function to get a cookie value by name
+  async function getCookie(name) {
+    return new Promise((resolve) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) resolve(parts.pop().split(';').shift());
+      else resolve(null);
+    });
   }
 
-  if (fontColorFromCookie) {
-    document.body.style.color = fontColorFromCookie;
-    fontColorInput.value = fontColorFromCookie;
+  // Function to set a cookie
+  async function setCookie(name, value, days) {
+    return new Promise((resolve) => {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      const expires = "expires=" + date.toUTCString();
+      document.cookie = `${name}=${value}; ${expires}; path=/`;
+      resolve();
+    });
   }
-});
 
-// Handle form submission
-form.addEventListener("submit", (e) => {
-  e.preventDefault(); // Prevent the default form submission behavior
+  // Apply saved preferences if they exist
+  const savedFontSize = await getCookie("fontsize");
+  const savedFontColor = await getCookie("fontcolor");
+  if (savedFontSize) {
+    document.documentElement.style.setProperty('--fontsize', `${savedFontSize}px`);
+    fontsizeInput.value = savedFontSize;
+  }
+  if (savedFontColor) {
+    document.documentElement.style.setProperty('--fontcolor', savedFontColor);
+    fontcolorInput.value = savedFontColor;
+  }
 
-  const fontSizeValue = fontSizeInput.value + "px";
-  const fontColorValue = fontColorInput.value;
+  // Event listener for form submission
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const fontsize = fontsizeInput.value;
+    const fontcolor = fontcolorInput.value;
 
-  // Apply the user's preferences to the page 
-  document.body.style.fontSize = fontSizeValue;
-  document.body.style.color = fontColorValue;
+    // Save preferences in cookies
+    await setCookie("fontsize", fontsize, 365);
+    await setCookie("fontcolor", fontcolor, 365);
 
-  // Store user preferences as cookies 
-  setCookie("fontSize", fontSizeValue, 365); // Cookie expires in 365 days
-  setCookie("fontColor", fontColorValue, 365); // Cookie expires in 365 days
+    // Apply preferences
+    document.documentElement.style.setProperty('--fontsize', `${fontsize}px`);
+    document.documentElement.style.setProperty('--fontcolor', fontcolor);
+  });
 });
