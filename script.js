@@ -1,54 +1,33 @@
 //your JS code here. If required.
-document.addEventListener("DOMContentLoaded", async function () {
-  const form = document.getElementById("customization-form");
-  const fontsizeInput = document.getElementById("fontsize");
-  const fontcolorInput = document.getElementById("fontcolor");
+const fontSize = getCookie("fontSize");
+    const color = getCookie("color");
+    if (fontSize) {
+      document.body.style.fontSize = fontSize;
+      document.getElementById("fontsize").value = fontSize;
+    }
+    if (color) {
+      document.body.style.color = color;
+      document.getElementById("color").value = color;
+    }
 
-  // Function to get a cookie value by name
-  async function getCookie(name) {
-    return new Promise((resolve) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) resolve(parts.pop().split(';').shift());
-      else resolve(null);
-    });
-  }
+    // Function to set user's preferences as cookies
+    function setPreferences() {
+      const fontSize = document.getElementById("fontsize").value + "px";
+      const color = document.getElementById("color").value;
+      document.body.style.fontSize = fontSize;
+      document.body.style.color = color;
+      document.cookie = "fontSize=" + fontSize + "; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/";
+      document.cookie = "color=" + color + "; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/";
+    }
 
-  // Function to set a cookie
-  async function setCookie(name, value, days) {
-    return new Promise((resolve) => {
-      const date = new Date();
-      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-      const expires = "expires=" + date.toUTCString();
-      document.cookie = `${name}=${value}; ${expires}; path=/`;
-      resolve();
-    });
-  }
-
-  // Apply saved preferences if they exist
-  const savedFontSize = await getCookie("fontsize");
-  const savedFontColor = await getCookie("fontcolor");
-  if (savedFontSize) {
-    document.documentElement.style.setProperty('--fontsize', `${savedFontSize}px`);
-    fontsizeInput.value = savedFontSize;
-  }
-  if (savedFontColor) {
-    document.documentElement.style.setProperty('--fontcolor', savedFontColor);
-    fontcolorInput.value = savedFontColor;
-  }
-
-  // Event listener for form submission
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const fontsize = fontsizeInput.value;
-    const fontcolor = fontcolorInput.value;
-
-    // Save preferences in cookies
-    await setCookie("fontsize", fontsize, 365);
-    await setCookie("fontcolor", fontcolor, 365);
-
-    // Apply preferences
-    document.documentElement.style.setProperty('--fontsize', `${fontsize}px`);
-    document.documentElement.style.setProperty('--fontcolor', fontcolor);
-  });
-});
+    // Function to retrieve a cookie by name
+    function getCookie(name) {
+      const cookies = document.cookie.split("; ");
+      for (let i = 0; i < cookies.length; i++) {
+        const parts = cookies[i].split("=");
+        if (parts[0] === name) {
+          return parts[1];
+        }
+      }
+      return null;
+    }
